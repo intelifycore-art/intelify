@@ -1,0 +1,55 @@
+{
+  "name": "Git_Workflow",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -256,
+        -48
+      ],
+      "id": "16a47012-4296-42b4-abfd-d98783b31fef",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "n8nApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -48,
+        -48
+      ],
+      "id": "59592bc6-a501-4a10-92c1-3a32d6f6429e",
+      "name": "HTTP Request"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ea5decad-98bb-4b6d-994b-f98b8811849d",
+  "meta": {
+    "instanceId": "2492ef5e7ca3ed39cc6585b96af4328575b885458a1f30dbca820a83ec60cb77"
+  },
+  "id": "hHAflrYGn07AgKuJ",
+  "tags": []
+}
