@@ -1,0 +1,486 @@
+{
+  "id": "1KSNrm5BmCxmMOaJ",
+  "name": "analyzer",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "jsonExample",
+        "jsonExample": "{\n  \"query\": \"a string\",\n  \"sessionId\": \"abc\"\n}"
+      },
+      "id": "c055762a-8fe7-4141-a639-df2372f30060",
+      "typeVersion": 1.1,
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        160,
+        352
+      ],
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.query }}",
+        "options": {
+          "systemMessage": "You are a deterministic data analysis agent operating inside an automation workflow. Output must always be a simple WhatsApp-friendly text message (no JSON, no code blocks, no tables). Keep answers concise by default; when the query explicitly asks for detail, provide a thorough, well-structured deep dive in plain text.\n\nInput\n\nSingle key: query (natural language).\n\nOutput style\n\nAlways return plain text suitable for WhatsApp reading.\n\nShort by default: 3–6 compact bullets or a tight paragraph when the task is simple.\n\nWhen detailed analysis is requested, expand into short sections with clear headings and line breaks, still in plain text.\n\nNo JSON, no markdown tables, no links unless explicitly requested. If including numbers, use 3 significant decimals and include units/currency/timezone.\n\nAutonomy and data access\n\nInfer which Google Sheet to use from the query intent. If runtime/downtime/OEE/utilization/MTBF/MTTR/machines → choose machine_runtime_data. If revenue/sales/invoices/payments/customers/AR/AP/margin → choose transactions. Otherwise, semantically match to the closest available sheet by name; briefly state the rationale.\n\nFind the spreadsheet by name, pick the most relevant tab (or tab named in query), fetch headers and rows. If access fails or required fields are missing, stop and output remediation steps in plain text.\n\nValidation protocol (summarize in text, no JSON)\n\nConfirm selected sheet and tab.\n\nProfile: row_count, column_count; list fields with inferred types (numeric | categorical | datetime | text); missingness % per field; duplicates removed; time coverage (ISO8601 start/end, timezone) if a datetime exists. \n\nIf dataset is empty/malformed or incompatible with the task, output precise remediation steps: expected sheet/tab, required columns and types, and an example schema (described in one or two sentences).\n\nAnalysis protocol\n\nSimple ops: filters (exact/contains/regex), numeric/date ranges; aggregations (sum, count, avg, min, max, median, std); group by category/time buckets; sorting/top-k; distinct counts; basic pivots (rows x columns with an aggregate).\n\nArithmetic: add/subtract/multiply/divide; derived rates and percentages.\n\nTime series: resample daily/weekly/monthly; growth rates; moving averages; seasonality if evident.\n\nDomain examples:\n\nmachine_runtime_data: utilization, uptime/downtime minutes, top downtime causes; Availability/Performance/Quality if data allows; MTBF/MTTR from event logs.\n\ntransactions: revenue, margin (if cost exists), product/customer mix, cohorts, AR aging, spike/dip anomalies.\n\nForecasting/ML only if asked or strongly implied: baseline naive → moving average; report horizon and MAE/MAPE on a simple holdout if feasible; for classification/regression use transparent baselines (logistic/linear) and report accuracy/F1 or R²/RMSE/MAE; list features and validation approach briefly.\n\nPrecision and limits\n\nUse 3 significant decimals; include units/currency/timezone where relevant.\n\nDo not echo large datasets; cap inline result rows to the top 50, summarized as compact CSV-like lines if needed, but still plain text (no attachments).\n\nMask or aggregate any PII.\n\nDeterminism and guardrails\n\nDo not fabricate columns or values. State any sampling, resampling, outlier handling, or imputation.\n\nIf multiple sheets are plausible, pick one and briefly state why; if ambiguity is too high, list top candidates and ask for a one-line clarification.\n\nIf blocked, output clear remediation steps and stop.\n\nDefault response structure (in plain text, no JSON)\n\nSummary: 3–6 crisp bullets: chosen sheet/tab, what was done, key results.\n\nKey metrics: a compact list of metric=value (with units) and, if relevant, a few by-segment highlights.\n\nResults: up to 50 short lines showing the most important rows or aggregates.\n\nInsights: 2–4 findings with what/why/evidence/impact and a one-line suggested action.\n\nNotes: assumptions, transformations, exclusions.\n\nNext: concrete follow-ups (alerts, dashboards, thresholds).\n\nIf needed: Clarification needed or Remediation steps, each as a short list.\n\nExamples of tasks you support\n\n“Filter machine_runtime_data for machine_id=A12 in the last 7 days; return daily downtime minutes.”\n\n“From transactions, sum revenue for Q2 FY25 where region=South and category in [A, B]; output CSV metrics.”\n\n“Compute monthly OEE trend from machine_runtime_data and list top 3 downtime causes last 30 days.”\n\n“Top 10 customers by 90-day revenue from transactions with month-over-month growth.”\n\n“Forecast next 3 months’ revenue using transactions; report MAPE and provide a compact forecast list.”\n\nRemember: Always reply as WhatsApp-friendly plain text. Be concise unless the query asks for detailed analysis; then expand with clear headings and short sections, still without JSON."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        480,
+        352
+      ],
+      "id": "1fda94ec-e9bb-41d1-9c20-db53e4b9dbef",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        352,
+        560
+      ],
+      "id": "07c2c0c2-ff4b-4fcd-bd39-e72e42a17126",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Ao8Bu0VVR2w0HJnI",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        48,
+        528
+      ],
+      "id": "1f532d78-969d-4e7d-b73b-a5bf1731bec0",
+      "name": "When chat message received",
+      "webhookId": "c55ecdc4-b842-4071-bb8b-b20c47bb7f5d"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1VVoGu_wHn6-zVSBTdOgR4IbLI_vwskPKfi-huWN-r_8",
+          "mode": "list",
+          "cachedResultName": "Biomass_Briquettes_Model",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1VVoGu_wHn6-zVSBTdOgR4IbLI_vwskPKfi-huWN-r_8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "machine_runtime_data",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1VVoGu_wHn6-zVSBTdOgR4IbLI_vwskPKfi-huWN-r_8/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        768,
+        512
+      ],
+      "id": "e9c0205c-7942-430c-bf89-b698b5caca27",
+      "name": "Get machine_runtime_data",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "AYtgVwHc0WLWE3iH",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1VVoGu_wHn6-zVSBTdOgR4IbLI_vwskPKfi-huWN-r_8",
+          "mode": "list",
+          "cachedResultName": "Biomass_Briquettes_Model",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1VVoGu_wHn6-zVSBTdOgR4IbLI_vwskPKfi-huWN-r_8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 523676973,
+          "mode": "list",
+          "cachedResultName": "Transactions",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1VVoGu_wHn6-zVSBTdOgR4IbLI_vwskPKfi-huWN-r_8/edit#gid=523676973"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        640,
+        560
+      ],
+      "id": "b9566c18-f07e-4aaa-8346-c68e70d37c20",
+      "name": "Get Transaction Data",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "AYtgVwHc0WLWE3iH",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        496,
+        560
+      ],
+      "id": "82d3a0b4-602f-4451-8076-616407b2455b",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM SALES.HD_SALES_ORDER  LIMIT 5;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        1120,
+        256
+      ],
+      "id": "1a27a32b-5523-489a-8c21-ebd22931b5b9",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "mySql": {
+          "id": "029xAWYWzFqBsnSS",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "database_rag",
+          "mode": "list",
+          "cachedResultName": "database_rag"
+        },
+        "embeddingBatchSize": 400,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.3,
+      "position": [
+        304,
+        800
+      ],
+      "id": "d78e2b57-ffbe-448f-b6f8-08c9e9dd4fc3",
+      "name": "Qdrant Vector Store",
+      "credentials": {
+        "qdrantApi": {
+          "id": "fsR7Zqr9lgPg82Mz",
+          "name": "QdrantApi account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        272,
+        976
+      ],
+      "id": "5bab2267-f8ff-472e-9bbf-e2ba552d5cbf",
+      "name": "Embeddings Google Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Ao8Bu0VVR2w0HJnI",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        416,
+        976
+      ],
+      "id": "a5262bde-bede-46ea-a489-e1b047dfd286",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1b81177a-7c55-44b4-bbe3-0ea22488edff",
+              "name": "Cost",
+              "value": "Item: Name of the Item\nUnit Cost: Cost of one item",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        112,
+        800
+      ],
+      "id": "60116e04-22a4-4617-a88c-15e0caadf97f",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Use this tool to find out schema definition for tables. ",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "database_rag",
+          "mode": "list",
+          "cachedResultName": "database_rag"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.3,
+      "position": [
+        880,
+        528
+      ],
+      "id": "786328b5-6c8d-431e-b41f-215f838bfc07",
+      "name": "Qdrant Vector Store1",
+      "credentials": {
+        "qdrantApi": {
+          "id": "fsR7Zqr9lgPg82Mz",
+          "name": "QdrantApi account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        928,
+        784
+      ],
+      "id": "0062e1b9-459c-4dbd-ad3a-4b38b0683557",
+      "name": "Embeddings Google Gemini1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Ao8Bu0VVR2w0HJnI",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        []
+      ]
+    },
+    "Get machine_runtime_data": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Transaction Data": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qdrant Vector Store": {
+      "main": [
+        []
+      ]
+    },
+    "Embeddings Google Gemini1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Qdrant Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qdrant Vector Store1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "triggerCount": 0,
+  "shared": [
+    {
+      "createdAt": "2025-10-01T21:39:59.461Z",
+      "updatedAt": "2025-10-01T21:39:59.461Z",
+      "role": "workflow:owner",
+      "workflowId": "1KSNrm5BmCxmMOaJ",
+      "projectId": "SQ0uy0eFCHNfGlOf",
+      "project": {
+        "createdAt": "2025-08-31T12:57:15.001Z",
+        "updatedAt": "2026-01-30T07:38:47.841Z",
+        "id": "SQ0uy0eFCHNfGlOf",
+        "name": "Anish Gupta <intelifycore@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "projectRelations": [
+          {
+            "createdAt": "2025-08-31T12:57:15.002Z",
+            "updatedAt": "2025-08-31T12:57:15.002Z",
+            "role": "project:personalOwner",
+            "userId": "4a1bc034-8ad7-4afc-a00d-a019fe2e8141",
+            "projectId": "SQ0uy0eFCHNfGlOf",
+            "user": {
+              "createdAt": "2025-08-31T12:57:14.366Z",
+              "updatedAt": "2026-02-04T04:27:32.000Z",
+              "id": "4a1bc034-8ad7-4afc-a00d-a019fe2e8141",
+              "email": "intelifycore@gmail.com",
+              "firstName": "Anish",
+              "lastName": "Gupta",
+              "personalizationAnswers": {
+                "version": "v4",
+                "personalization_survey_submitted_at": "2025-08-31T12:59:06.176Z",
+                "personalization_survey_n8n_version": "1.108.2",
+                "companySize": "<20",
+                "companyType": "saas",
+                "role": "business-owner",
+                "reportedSource": "youtube"
+              },
+              "settings": {
+                "userActivated": true,
+                "easyAIWorkflowOnboarded": true,
+                "firstSuccessfulWorkflowId": "1KSNrm5BmCxmMOaJ",
+                "userActivatedAt": 1759356088061,
+                "npsSurvey": {
+                  "responded": true,
+                  "lastShownAt": 1765489803813
+                }
+              },
+              "role": "global:owner",
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2026-02-03",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": []
+}
