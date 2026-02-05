@@ -447,7 +447,7 @@
             "projectId": "SQ0uy0eFCHNfGlOf",
             "user": {
               "createdAt": "2025-08-31T12:57:14.366Z",
-              "updatedAt": "2026-02-04T04:27:32.000Z",
+              "updatedAt": "2026-02-05T00:42:32.000Z",
               "id": "4a1bc034-8ad7-4afc-a00d-a019fe2e8141",
               "email": "intelifycore@gmail.com",
               "firstName": "Anish",
@@ -474,7 +474,7 @@
               "role": "global:owner",
               "disabled": false,
               "mfaEnabled": false,
-              "lastActiveAt": "2026-02-03",
+              "lastActiveAt": "2026-02-04",
               "isPending": false
             }
           }
