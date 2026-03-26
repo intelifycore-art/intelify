@@ -57,26 +57,26 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <div class="bg-gray-900 text-white p-6 rounded-2xl shadow-sm relative">
                 <div class="text-sm text-gray-400 mb-2">Total Sales Revenue</div>
-                <div class="text-3xl font-bold">$87.19M</div>
-                <div class="text-xs text-green-400 mt-2">+2.14% from previous</div>
+                <div id="totalSales" class="text-3xl font-bold">Loading...</div>
+                <div id="totalSalesDelta" class="text-xs text-green-400 mt-2">...</div>
                 <div class="absolute top-4 right-4 bg-gray-800 p-2 rounded-lg">↗</div>
             </div>
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 relative">
                 <div class="text-sm text-gray-500 mb-2">Total Invoice Value</div>
-                <div class="text-3xl font-bold">$110.3M</div>
-                <div class="text-xs text-green-500 mt-2">+2.01% from previous</div>
+                <div id="totalInvoice" class="text-3xl font-bold">Loading...</div>
+                <div id="totalInvoiceDelta" class="text-xs text-green-500 mt-2">...</div>
                 <div class="absolute top-4 right-4 bg-gray-50 text-gray-400 p-2 rounded-lg">↗</div>
             </div>
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 relative">
                 <div class="text-sm text-gray-500 mb-2">Sales Quantity</div>
-                <div class="text-3xl font-bold">4.01M</div>
-                <div class="text-xs text-green-500 mt-2">+3.24% from previous</div>
+                <div id="salesQty" class="text-3xl font-bold">Loading...</div>
+                <div id="salesQtyDelta" class="text-xs text-green-500 mt-2">...</div>
                 <div class="absolute top-4 right-4 bg-gray-50 text-gray-400 p-2 rounded-lg">↗</div>
             </div>
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 relative">
                 <div class="text-sm text-gray-500 mb-2">Active Customers</div>
-                <div class="text-3xl font-bold">39</div>
-                <div class="text-xs text-green-500 mt-2">+8.33% from previous</div>
+                <div id="activeCust" class="text-3xl font-bold">Loading...</div>
+                <div id="activeCustDelta" class="text-xs text-green-500 mt-2">...</div>
                 <div class="absolute top-4 right-4 bg-gray-50 text-gray-400 p-2 rounded-lg">↗</div>
             </div>
         </div>
@@ -149,16 +149,16 @@
     </main>
 
     <script>
-        // Chart.js Configuration
+        // 1. Initialize an empty chart first so the canvas isn't blank while loading
         const ctx = document.getElementById('customerChart').getContext('2d');
-        new Chart(ctx, {
+        let customerChart = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: ['Hero (Gurgaon)', 'QH Talbros', 'Hero (N)', 'Hero (Dharuhera)', 'Hero (Vadodara)'],
+                labels: [], // Will be populated by fetch
                 datasets: [{
                     label: 'Revenue ($)',
-                    data: [13042916, 10871700, 8079309, 7151482, 5276966],
-                    backgroundColor: '#111827', // Dark color matching the UI
+                    data: [], // Will be populated by fetch
+                    backgroundColor: '#111827',
                     borderRadius: 4,
                     barPercentage: 0.6
                 }]
@@ -166,22 +166,54 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false }
-                },
+                plugins: { legend: { display: false } },
                 scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: { borderDash: [4, 4], color: '#f3f4f6' },
-                        border: { display: false }
-                    },
-                    x: {
-                        grid: { display: false },
-                        border: { display: false }
-                    }
+                    y: { beginAtZero: true, grid: { borderDash: [4, 4], color: '#f3f4f6' }, border: { display: false } },
+                    x: { grid: { display: false }, border: { display: false } }
                 }
             }
         });
+
+        // 2. Fetch the data.json file from your Hostinger server
+        async function loadDashboardData() {
+            try {
+                // Ensure data.json is in the same directory, or provide the full URL path
+                // Adding a cache-busting timestamp ensures the browser always gets the latest file
+                const response = await fetch(`data.json?t=${new Date().getTime()}`); 
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+
+                // 3. Update the KPI Cards in the DOM
+                document.getElementById('totalSales').textContent = data.kpis.totalSalesRevenue.value;
+                document.getElementById('totalSalesDelta').textContent = `${data.kpis.totalSalesRevenue.delta} from previous`;
+                
+                document.getElementById('totalInvoice').textContent = data.kpis.totalInvoiceValue.value;
+                document.getElementById('totalInvoiceDelta').textContent = `${data.kpis.totalInvoiceValue.delta} from previous`;
+                
+                document.getElementById('salesQty').textContent = data.kpis.salesQuantity.value;
+                document.getElementById('salesQtyDelta').textContent = `${data.kpis.salesQuantity.delta} from previous`;
+                
+                document.getElementById('activeCust').textContent = data.kpis.activeCustomers.value;
+                document.getElementById('activeCustDelta').textContent = `${data.kpis.activeCustomers.delta} from previous`;
+
+                // 4. Update the Chart.js graph with new data
+                customerChart.data.labels = data.chartData.labels;
+                customerChart.data.datasets[0].data = data.chartData.revenues;
+                customerChart.update(); // Tells Chart.js to re-render
+
+            } catch (error) {
+                console.error("Could not load dashboard data:", error);
+                // Fallback text if the file fails to load
+                document.getElementById('totalSales').textContent = "Error loading";
+            }
+        }
+
+        // Run the function when the page loads
+        loadDashboardData();
     </script>
 </body>
 </html>
